@@ -280,7 +280,14 @@ Closing
 
     if (dataLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div 
+                className="min-h-screen py-8"
+                style={{ 
+                    backgroundImage: 'url("/image.png")', 
+                    backgroundSize: 'cover', 
+                    backgroundPosition: 'center' 
+                }}
+            >
                 <div className="max-w-4xl mx-auto px-4">
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <div className="text-center">
@@ -295,7 +302,14 @@ Closing
 
     if (!restaurantData) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div 
+                className="min-h-screen py-8"
+                style={{ 
+                    backgroundImage: 'url("/image.png")', 
+                    backgroundSize: 'cover', 
+                    backgroundPosition: 'center' 
+                }}
+            >
                 <div className="max-w-4xl mx-auto px-4">
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <div className="text-center">
@@ -315,7 +329,14 @@ Closing
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div 
+            className="min-h-screen py-8"
+            style={{ 
+                backgroundImage: 'url("/image.png")', 
+                backgroundSize: 'cover', 
+                backgroundPosition: 'center' 
+            }}
+        >
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-lg shadow-lg p-6">
                     {/* Header with Back Button */}
@@ -417,7 +438,7 @@ Closing
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                         <h3 className="font-semibold text-blue-900 mb-2">How to use:</h3>
                         <ul className="text-sm text-blue-800 space-y-1">
-                            <li>• Click "Start Nutritional Chat" to connect to the voice assistant</li>
+                            <li>• Click "Start Presto Chat" to connect to the voice assistant</li>
                             <li>• Allow microphone access when prompted</li>
                             <li>• Ask questions like "How many calories in a Big Mac?" or "What ingredients are in the chicken sandwich?"</li>
                             <li>• The assistant will respond with voice and text</li>
