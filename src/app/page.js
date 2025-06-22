@@ -69,7 +69,7 @@ export default function Home() {
               )}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Free your team from repetitive order-taking so they can focus on food quality, customer experience, and growing your business. AI handles the routine questions while your staff creates memorable moments..
+              Free your team from repetitive order-taking so they can focus on food quality, customer experience, and growing your business. AI handles the routine questions while your staff creates memorable moments!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
@@ -292,7 +292,7 @@ export default function Home() {
               Business Benefits
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Reduce labor costs, increase order accuracy, and improve customer satisfaction.
+              Enhance employee efficiency, increase order accuracy, and improve customer satisfaction.
             </p>
           </div>
 
@@ -303,9 +303,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Reduce Labor Costs</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Enhance Employee Efficiency</h3>
               <p className="text-gray-600">
-                AI handles customer questions and orders 24/7, reducing the need for order takers and customer service staff.
+                AI handles routine questions and orders, freeing your staff to focus on food quality, customer connections, and business growth.
               </p>
             </div>
 

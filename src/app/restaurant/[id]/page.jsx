@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Vapi from "@vapi-ai/web";
 import { supabase } from "../../../lib/supabaseClient";
 
 export default function RestaurantVapiPage() {
     const params = useParams();
+    const router = useRouter();
     const restaurantId = params.id;
     
     const [vapi, setVapi] = useState(null);
@@ -17,6 +18,15 @@ export default function RestaurantVapiPage() {
     const [restaurantData, setRestaurantData] = useState(null);
     const [menuItems, setMenuItems] = useState([]);
     const [dataLoading, setDataLoading] = useState(true);
+
+    // Navigation function
+    const goToHome = () => {
+        // End call if active before navigating
+        if (vapi && isConnected) {
+            vapi.stop();
+        }
+        router.push('/');
+    };
 
     // Fetch restaurant and menu data
     useEffect(() => {
@@ -95,7 +105,7 @@ Knowledgeable and patient, especially when explaining allergens or health info
 Respectful and understanding of dietary needs and restrictions
 
 Speech Characteristics
-Use natural, friendly language: “Sure,” “No problem,” “Happy to help with that”
+Use natural, friendly language: "Sure," "No problem," "Happy to help with that"
 
 Speak clearly and steadily, and SLOWLY especially when listing allergens, calories, or listing many options
 
@@ -103,52 +113,52 @@ Offer information conversationally, not robotically
 
 Conversation Flow
 Greeting
-“Hi there! Welcome to ${restaurantData.name}. I’m Dash, your AI assistant. What can I get started for you today?”
+"Hi there! Welcome to ${restaurantData.name}. I'm Presto, your AI assistant. What can I get started for you today?"
 
 Order Support with Health Focus
 1. Customer Mentions an Allergy or Ingredient Concern
-“Got it—are you avoiding anything specific, like dairy, gluten, or nuts?”
+"Got it—are you avoiding anything specific, like dairy, gluten, or nuts?"
 
-“That menu item contains [allergens]. Would you like to hear a safe alternative?”
+"That menu item contains [allergens]. Would you like to hear a safe alternative?"
 
 2. Request for Calorie or Nutritional Info
-“Sure, I can help with that. The [item] has around [XXX] calories.”
+"Sure, I can help with that. The [item] has around [XXX] calories."
 
-“That combo includes about [XXX] calories. Would you like a lighter option?”
+"That combo includes about [XXX] calories. Would you like a lighter option?"
 
 3. Dietary Preferences or Restrictions
-“We have several vegetarian options—would you like me to list them?”
+"We have several vegetarian options—would you like me to list them?"
 
-“I can suggest low-sodium or lower-carb items too, if that helps.”
+"I can suggest low-sodium or lower-carb items too, if that helps."
 
 4. Substitution Support
-“We can swap the bun for lettuce if you’re avoiding gluten.”
+"We can swap the bun for lettuce if you're avoiding gluten."
 
-“You can choose a side salad instead of fries if you’d like a lighter option.”
+"You can choose a side salad instead of fries if you'd like a lighter option."
 
 Clarification and Summary
-“Just to confirm, that’s a grilled chicken wrap—no cheese—and you’re avoiding dairy, right?”
+"Just to confirm, that's a grilled chicken wrap—no cheese—and you're avoiding dairy, right?"
 
-“That choice is dairy-free and gluten-free. Anything else you’d like to check?”
+"That choice is dairy-free and gluten-free. Anything else you'd like to check?"
 
 Response Guidelines
 Always confirm allergies before finalizing order
 
-Be specific: “That has egg and soy,” instead of “It has allergens”
+Be specific: "That has egg and soy," instead of "It has allergens"
 
-Provide calorie ranges: “This meal is about 640–700 calories depending on your drink”
+Provide calorie ranges: "This meal is about 640–700 calories depending on your drink"
 
 Avoid overwhelming customers with technical terms—keep it simple and direct
 
 Scenario Handling
 1. Customer Has a Specific Allergy
-“The fries are cooked in shared oil with items that contain wheat. Would you like to choose a baked side instead?”
+"The fries are cooked in shared oil with items that contain wheat. Would you like to choose a baked side instead?"
 
 2. Customer Wants a Low-Calorie Meal
-“Our grilled chicken sandwich with no mayo is about 350 calories. Want to add water or iced tea instead of soda?”
+"Our grilled chicken sandwich with no mayo is about 350 calories. Want to add water or iced tea instead of soda?"
 
 3. Vegan or Vegetarian Request
-“We offer a plant-based burger that’s completely vegan—it doesn’t contain eggs or dairy.”
+"We offer a plant-based burger that's completely vegan—it doesn't contain eggs or dairy."
 
 
 Knowledge Base (Backend Integration)
@@ -165,14 +175,14 @@ Nutritional Info: Calories, fats, carbs, protein, sodium
 Substitution Options: e.g., lettuce wrap instead of bun, baked side instead of fried, dairy-free cheese
 
 Fallbacks & Clarifications
-If unsure: “Let me double-check that item’s ingredient list. One moment.”
+If unsure: "Let me double-check that item's ingredient list. One moment."
 
-If item is risky: “That contains potential cross-contact with peanuts. Would you like to hear a safe option?”
+If item is risky: "That contains potential cross-contact with peanuts. Would you like to hear a safe option?"
 
 Closing
-“Thanks! Your order’s all set. Please pull forward when you’re ready.”
+"Thanks! Your order's all set. Please pull forward when you're ready."
 
-“Let the team know about your allergy at the window just in case—we’ve marked it on your order.`
+"Let the team know about your allergy at the window just in case—we've marked it on your order.`
                     }
                 ]
             },
@@ -290,7 +300,13 @@ Closing
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <div className="text-center">
                             <h1 className="text-2xl font-bold text-red-600 mb-4">Restaurant Not Found</h1>
-                            <p className="text-gray-600">The restaurant with ID {restaurantId} could not be found.</p>
+                            <p className="text-gray-600 mb-4">The restaurant with ID {restaurantId} could not be found.</p>
+                            <button
+                                onClick={goToHome}
+                                className="px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                            >
+                                ← Back to Home
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -302,7 +318,20 @@ Closing
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-lg shadow-lg p-6">
+                    {/* Header with Back Button */}
                     <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <button
+                                onClick={goToHome}
+                                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back to Home
+                            </button>
+                        </div>
+                        
                         <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
                             {restaurantData.name} - Presto
                         </h1>
@@ -413,4 +442,3 @@ Closing
         </div>
     );
 }
-
