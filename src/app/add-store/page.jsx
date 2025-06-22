@@ -35,7 +35,38 @@ export default function Home() {
         const { name, location } = formData;
 
         try {
-            // First, insert the restaurant data
+            // Handle file uploads first if any files are selected
+            if (selectedFiles.length > 0) {
+                console.log('Preparing to upload files:', selectedFiles.length, 'files');
+                console.log('File names:', selectedFiles.map(f => f.name));
+                
+                const uploadFormData = new FormData();
+                selectedFiles.forEach(file => {
+                    console.log('Adding file to FormData:', file.name, 'Type:', file.type, 'Size:', file.size);
+                    uploadFormData.append('files', file);
+                });
+
+                console.log('Sending upload request to /api/upload-menu');
+                const uploadResponse = await fetch('/api/upload-menu', {
+                    method: 'POST',
+                    body: uploadFormData,
+                });
+
+                console.log('Upload response status:', uploadResponse.status);
+                
+                if (!uploadResponse.ok) {
+                    const uploadError = await uploadResponse.json();
+                    console.error('Upload error response:', uploadError);
+                    throw new Error(uploadError.error || 'Failed to upload files');
+                }
+
+                const uploadResult = await uploadResponse.json();
+                console.log('Files uploaded successfully:', uploadResult.files);
+            } else {
+                console.log('No files selected for upload');
+            }
+
+            // Insert the restaurant data (keeping it exactly as before)
             const { data, error } = await supabase
                 .from("restaurants")
                 .insert([
@@ -47,26 +78,6 @@ export default function Home() {
 
             if (error) {
                 throw new Error(error.message);
-            }
-
-            // Handle file uploads if any files are selected
-            if (selectedFiles.length > 0) {
-                const uploadPromises = selectedFiles.map(async (file) => {
-                    const fileName = `${Date.now()}_${file.name}`;
-                    const filePath = `menus/${fileName}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('restaurant-menus')
-                        .upload(filePath, file);
-
-                    if (uploadError) {
-                        throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-                    }
-
-                    return filePath;
-                });
-
-                await Promise.all(uploadPromises);
             }
 
             console.log("Inserted:", data);
