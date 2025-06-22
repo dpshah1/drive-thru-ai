@@ -79,16 +79,42 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/add-store"
-                className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg inline-block"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
-                Start Your AI Customer Service
+                Transform Your Customer Service
               </Link>
-              <Link 
-                href="/restaurant"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 inline-block"
-              >
-                Try Demo Restaurants
-              </Link>
+              <div className="relative">
+                <button 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="border-2 border-gray-300 hover:border-gray-400 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 flex items-center gap-2"
+                >
+                  See How It Works
+                  <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                    <Link 
+                      href="/restaurant/1"
+                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 first:rounded-t-lg"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <div className="font-medium">El Pollo Loco</div>
+                      <div className="text-sm text-gray-500">Try AI ordering for chicken favorites</div>
+                    </Link>
+                    <Link 
+                      href="/restaurant/2"
+                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 last:rounded-b-lg"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <div className="font-medium">In-N-Out</div>
+                      <div className="text-sm text-gray-500">Experience AI alongside classic burgers</div>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
