@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function Home() {
     const [formData, setFormData] = useState({
@@ -14,8 +13,6 @@ export default function Home() {
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [processingStatus, setProcessingStatus] = useState("");
-
-    const router = useRouter(); // Initialize useRouter
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,34 +40,34 @@ export default function Home() {
             // Handle file uploads first if any files are selected
             if (selectedFiles.length > 0) {
                 setProcessingStatus("📤 Uploading PDF files...");
-                console.log("Preparing to upload files:", selectedFiles.length, "files");
-                console.log("File names:", selectedFiles.map(f => f.name));
+                console.log('Preparing to upload files:', selectedFiles.length, 'files');
+                console.log('File names:', selectedFiles.map(f => f.name));
                 
                 const uploadFormData = new FormData();
                 selectedFiles.forEach(file => {
-                    console.log("Adding file to FormData:", file.name, "Type:", file.type, "Size:", file.size);
-                    uploadFormData.append("files", file);
+                    console.log('Adding file to FormData:', file.name, 'Type:', file.type, 'Size:', file.size);
+                    uploadFormData.append('files', file);
                 });
 
-                console.log("Sending upload request to /api/upload-menu");
-                const uploadResponse = await fetch("/api/upload-menu", {
-                    method: "POST",
+                console.log('Sending upload request to /api/upload-menu');
+                const uploadResponse = await fetch('/api/upload-menu', {
+                    method: 'POST',
                     body: uploadFormData,
                 });
 
-                console.log("Upload response status:", uploadResponse.status);
+                console.log('Upload response status:', uploadResponse.status);
                 
                 if (!uploadResponse.ok) {
                     const uploadError = await uploadResponse.json();
-                    console.error("Upload error response:", uploadError);
-                    throw new Error(uploadError.error || "Failed to upload files");
+                    console.error('Upload error response:', uploadError);
+                    throw new Error(uploadError.error || 'Failed to upload files');
                 }
 
                 const uploadResult = await uploadResponse.json();
-                console.log("Files uploaded successfully:", uploadResult.files);
+                console.log('Files uploaded successfully:', uploadResult.files);
                 setProcessingStatus("✅ Files uploaded successfully");
             } else {
-                console.log("No files selected for upload");
+                console.log('No files selected for upload');
             }
 
             // Insert the restaurant data (keeping it exactly as before)
@@ -92,26 +89,23 @@ export default function Home() {
             console.log("Restaurant inserted:", data);
             setProcessingStatus("✅ Restaurant created successfully");
 
-            // Get the ID of the newly created restaurant
-            const newRestaurantId = data[0].id;
-
             // Process menu items if files were uploaded
             if (selectedFiles.length > 0 && data && data[0]) {
                 const restaurant_id = data[0].id;
-                console.log("Processing menu items for restaurant ID:", restaurant_id);
+                console.log('Processing menu items for restaurant ID:', restaurant_id);
 
                 setProcessingStatus("📖 Reading PDF files and extracting text...");
 
                 // Create a timeout promise - increased to 5 minutes
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Menu processing timeout after 5 minutes")), 300000)
+                    setTimeout(() => reject(new Error('Menu processing timeout after 5 minutes')), 300000)
                 );
 
                 // Create the fetch promise
-                const fetchPromise = fetch("/api/process-menu", {
-                    method: "POST",
+                const fetchPromise = fetch('/api/process-menu', {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ restaurant_id }),
                 });
@@ -120,20 +114,20 @@ export default function Home() {
                     setProcessingStatus("🤖 Sending PDF content to Google Gemini for analysis...");
                     const processResponse = await Promise.race([fetchPromise, timeoutPromise]);
 
-                    console.log("Process response received, status:", processResponse.status);
+                    console.log('Process response received, status:', processResponse.status);
 
                     if (!processResponse.ok) {
                         const processError = await processResponse.json();
-                        console.error("Menu processing error:", processError);
+                        console.error('Menu processing error:', processError);
                         setProcessingStatus("⚠️ Menu processing failed, but restaurant was created successfully");
-                        console.log("Menu processing failed, but restaurant was created successfully");
+                        console.log('Menu processing failed, but restaurant was created successfully');
                     } else {
                         const processResult = await processResponse.json();
-                        console.log("Menu items processed successfully:", processResult);
+                        console.log('Menu items processed successfully:', processResult);
                         
                         if (processResult.summary) {
                             const processingTime = processResult.summary.processingTime;
-                            const timeDisplay = processingTime ? `${processingTime.toFixed(2)} seconds` : "successfully";
+                            const timeDisplay = processingTime ? `${processingTime.toFixed(2)} seconds` : 'successfully';
                             setProcessingStatus(`🎉 Menu processing completed! ${processResult.summary.itemsInserted} items inserted ${timeDisplay}`);
                         } else {
                             setProcessingStatus("✅ Menu items processed successfully");
@@ -149,21 +143,21 @@ export default function Home() {
                         }
                     }
                 } catch (timeoutError) {
-                    console.error("Menu processing timeout or error:", timeoutError);
+                    console.error('Menu processing timeout or error:', timeoutError);
                     
                     // Check if the request actually succeeded despite timeout
                     try {
-                        const checkResponse = await fetch("/api/process-menu", {
-                            method: "POST",
+                        const checkResponse = await fetch('/api/process-menu', {
+                            method: 'POST',
                             headers: {
-                                "Content-Type": "application/json",
+                                'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({ restaurant_id }),
                         });
                         
                         if (checkResponse.ok) {
                             const checkResult = await checkResponse.json();
-                            console.log("Menu processing actually succeeded:", checkResult);
+                            console.log('Menu processing actually succeeded:', checkResult);
                             
                             if (checkResult.summary) {
                                 setProcessingStatus(`🎉 Menu processing completed! ${checkResult.summary.itemsInserted} items inserted successfully`);
@@ -174,17 +168,17 @@ export default function Home() {
                             setProcessingStatus("⚠️ Menu processing may have failed, but restaurant was created successfully");
                         }
                     } catch (checkError) {
-                        console.error("Could not verify processing status:", checkError);
+                        console.error('Could not verify processing status:', checkError);
                         setProcessingStatus("⚠️ Menu processing timed out, but restaurant was created successfully");
                     }
                 }
             } else {
-                console.log("PDF processing skipped because:");
-                console.log("- selectedFiles.length > 0:", selectedFiles.length > 0);
-                console.log("- data exists:", !!data);
-                console.log("- data[0] exists:", !!data[0]);
+                console.log('PDF processing skipped because:');
+                console.log('- selectedFiles.length > 0:', selectedFiles.length > 0);
+                console.log('- data exists:', !!data);
+                console.log('- data[0] exists:', !!data[0]);
                 if (data && data[0]) {
-                    console.log("- restaurant_id:", data[0].id);
+                    console.log('- restaurant_id:', data[0].id);
                 }
             }
 
@@ -192,9 +186,6 @@ export default function Home() {
             setFormData({ name: "", location: "" });
             setSelectedFiles([]);
             
-            // Redirect to the new restaurant's page
-            router.push(`/restaurant/${newRestaurantId}`);
-
         } catch (error) {
             console.error("Error:", error.message);
             setErrorMessage(`Error submitting form: ${error.message}`);
@@ -267,27 +258,35 @@ export default function Home() {
                 </div>
 
                 <div className="mb-4">
-                    <label 
-                        htmlFor="menu" 
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Upload Menu (PDFs only):
-                    </label>
-                    <input
-                        type="file"
-                        id="menu"
-                        name="menu"
-                        accept="application/pdf"
-                        multiple
-                        onChange={handleFileChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    {selectedFiles.length > 0 && (
-                        <div className="mt-2 text-sm text-gray-600">
-                            Selected files: {selectedFiles.map(file => file.name).join(", ")}
-                        </div>
-                    )}
-                </div>
+    <label 
+        htmlFor="menu" 
+        className="block text-sm font-medium text-gray-700 mb-1"
+    >
+        Upload Menu (PDFs only):
+    </label>
+    <div className="relative">
+        <input
+            type="file"
+            id="menu"
+            name="menu"
+            accept="application/pdf"
+            multiple
+            onChange={handleFileChange}
+            className="hidden"
+        />
+        <label
+            htmlFor="menu"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer inline-block text-gray-700 hover:bg-gray-50"
+        >
+            Choose Files
+        </label>
+    </div>
+    {selectedFiles.length > 0 && (
+        <div className="mt-2 text-sm text-gray-600">
+            Selected files: {selectedFiles.map(file => file.name).join(', ')}
+        </div>
+    )}
+</div>
 
                 <button
                     type="submit"

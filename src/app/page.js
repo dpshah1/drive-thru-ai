@@ -97,7 +97,7 @@ export default function Home() {
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <div className="font-medium">El Pollo Loco</div>
-                      <div className="text-sm text-gray-500">Try AI ordering with chicken favorites</div>
+                      <div className="text-sm text-gray-500">Try AI ordering for chicken favorites</div>
                     </Link>
                     <Link 
                       href="/restaurant/2"
@@ -105,7 +105,7 @@ export default function Home() {
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <div className="font-medium">In-N-Out</div>
-                      <div className="text-sm text-gray-500">Experience AI with classic burgers</div>
+                      <div className="text-sm text-gray-500">Experience AI alongside classic burgers</div>
                     </Link>
                   </div>
                 )}
