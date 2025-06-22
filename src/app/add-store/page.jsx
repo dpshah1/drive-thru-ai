@@ -12,6 +12,7 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [processingStatus, setProcessingStatus] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -31,12 +32,14 @@ export default function Home() {
         setLoading(true);
         setErrorMessage("");
         setSuccessMessage("");
+        setProcessingStatus("");
 
         const { name, location } = formData;
 
         try {
             // Handle file uploads first if any files are selected
             if (selectedFiles.length > 0) {
+                setProcessingStatus("📤 Uploading PDF files...");
                 console.log('Preparing to upload files:', selectedFiles.length, 'files');
                 console.log('File names:', selectedFiles.map(f => f.name));
                 
@@ -62,11 +65,13 @@ export default function Home() {
 
                 const uploadResult = await uploadResponse.json();
                 console.log('Files uploaded successfully:', uploadResult.files);
+                setProcessingStatus("✅ Files uploaded successfully");
             } else {
                 console.log('No files selected for upload');
             }
 
             // Insert the restaurant data (keeping it exactly as before)
+            setProcessingStatus("🏪 Creating restaurant in database...");
             const { data, error } = await supabase
                 .from("restaurants")
                 .insert([
@@ -74,13 +79,107 @@ export default function Home() {
                     name: name,
                     location: location,
                 },
-            ]);
+            ])
+            .select();
 
             if (error) {
                 throw new Error(error.message);
             }
 
-            console.log("Inserted:", data);
+            console.log("Restaurant inserted:", data);
+            setProcessingStatus("✅ Restaurant created successfully");
+
+            // Process menu items if files were uploaded
+            if (selectedFiles.length > 0 && data && data[0]) {
+                const restaurant_id = data[0].id;
+                console.log('Processing menu items for restaurant ID:', restaurant_id);
+
+                setProcessingStatus("📖 Reading PDF files and extracting text...");
+
+                // Create a timeout promise - increased to 5 minutes
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Menu processing timeout after 5 minutes')), 300000)
+                );
+
+                // Create the fetch promise
+                const fetchPromise = fetch('/api/process-menu', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ restaurant_id }),
+                });
+
+                try {
+                    setProcessingStatus("🤖 Sending PDF content to Google Gemini for analysis...");
+                    const processResponse = await Promise.race([fetchPromise, timeoutPromise]);
+
+                    console.log('Process response received, status:', processResponse.status);
+
+                    if (!processResponse.ok) {
+                        const processError = await processResponse.json();
+                        console.error('Menu processing error:', processError);
+                        setProcessingStatus("⚠️ Menu processing failed, but restaurant was created successfully");
+                        console.log('Menu processing failed, but restaurant was created successfully');
+                    } else {
+                        const processResult = await processResponse.json();
+                        console.log('Menu items processed successfully:', processResult);
+                        
+                        if (processResult.summary) {
+                            setProcessingStatus(`🎉 Menu processing completed! ${processResult.summary.itemsInserted} items inserted in ${processResult.summary.processingTime.toFixed(2)} seconds`);
+                        } else {
+                            setProcessingStatus("✅ Menu items processed successfully");
+                        }
+                        
+                        // Show detailed results if available
+                        if (processResult.results) {
+                            let detailedMessage = "📊 Processing Results:\n";
+                            processResult.results.forEach((result, index) => {
+                                detailedMessage += `📄 ${result.file}: ${result.itemsInserted} items inserted, ${result.errors} errors\n`;
+                            });
+                            console.log(detailedMessage);
+                        }
+                    }
+                } catch (timeoutError) {
+                    console.error('Menu processing timeout or error:', timeoutError);
+                    
+                    // Check if the request actually succeeded despite timeout
+                    try {
+                        const checkResponse = await fetch('/api/process-menu', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ restaurant_id }),
+                        });
+                        
+                        if (checkResponse.ok) {
+                            const checkResult = await checkResponse.json();
+                            console.log('Menu processing actually succeeded:', checkResult);
+                            
+                            if (checkResult.summary) {
+                                setProcessingStatus(`🎉 Menu processing completed! ${checkResult.summary.itemsInserted} items inserted successfully`);
+                            } else {
+                                setProcessingStatus("✅ Menu items processed successfully");
+                            }
+                        } else {
+                            setProcessingStatus("⚠️ Menu processing may have failed, but restaurant was created successfully");
+                        }
+                    } catch (checkError) {
+                        console.error('Could not verify processing status:', checkError);
+                        setProcessingStatus("⚠️ Menu processing timed out, but restaurant was created successfully");
+                    }
+                }
+            } else {
+                console.log('PDF processing skipped because:');
+                console.log('- selectedFiles.length > 0:', selectedFiles.length > 0);
+                console.log('- data exists:', !!data);
+                console.log('- data[0] exists:', !!data[0]);
+                if (data && data[0]) {
+                    console.log('- restaurant_id:', data[0].id);
+                }
+            }
+
             setSuccessMessage("Restaurant submitted successfully!");
             setFormData({ name: "", location: "" });
             setSelectedFiles([]);
@@ -88,6 +187,7 @@ export default function Home() {
         } catch (error) {
             console.error("Error:", error.message);
             setErrorMessage(`Error submitting form: ${error.message}`);
+            setProcessingStatus("");
         }
 
         setLoading(false);
@@ -103,11 +203,20 @@ export default function Home() {
                     Create a New Restaurant
                 </h1>
 
+                <h2 className="text-lg font-semibold text-center mb-4 text-gray-700">
+                    Combine all PDFs into one file before uploading
+                </h2>
+
                 {successMessage && (
                     <div className="mb-4 text-green-600">{successMessage}</div>
                 )}
                 {errorMessage && (
                     <div className="mb-4 text-red-600">{errorMessage}</div>
+                )}
+                {processingStatus && (
+                    <div className="mb-4 text-blue-600 text-sm bg-blue-50 p-3 rounded-md">
+                        {processingStatus}
+                    </div>
                 )}
 
                 <div className="mb-4">
@@ -174,7 +283,7 @@ export default function Home() {
                     disabled={loading}
                     className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                 >
-                    {loading ? "Submitting..." : "Submit"}
+                    {loading ? "Processing..." : "Submit"}
                 </button>
             </form>
         </main>
