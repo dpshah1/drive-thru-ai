@@ -126,7 +126,9 @@ export default function Home() {
                         console.log('Menu items processed successfully:', processResult);
                         
                         if (processResult.summary) {
-                            setProcessingStatus(`🎉 Menu processing completed! ${processResult.summary.itemsInserted} items inserted in ${processResult.summary.processingTime.toFixed(2)} seconds`);
+                            const processingTime = processResult.summary.processingTime;
+                            const timeDisplay = processingTime ? `${processingTime.toFixed(2)} seconds` : 'successfully';
+                            setProcessingStatus(`🎉 Menu processing completed! ${processResult.summary.itemsInserted} items inserted ${timeDisplay}`);
                         } else {
                             setProcessingStatus("✅ Menu items processed successfully");
                         }
