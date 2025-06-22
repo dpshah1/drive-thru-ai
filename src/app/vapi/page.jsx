@@ -11,7 +11,6 @@ export default function VapiPage() {
     const [assistantIsSpeaking, setAssistantIsSpeaking] = useState(false);
 
     // VAPI Configuration
-    // const NEXT_PUBLIC_VAPIAI_API_KEY = "0674b966-31ed-4d98-805d-ff6d35cd2cc5";
     
     // Simple assistant configuration
     const assistant = {
