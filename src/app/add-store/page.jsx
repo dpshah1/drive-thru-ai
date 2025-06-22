@@ -60,12 +60,15 @@ export default function Home() {
                 if (!uploadResponse.ok) {
                     const uploadError = await uploadResponse.json();
                     console.error('Upload error response:', uploadError);
-                    throw new Error(uploadError.error || 'Failed to upload files');
+                    throw new Error(uploadError.error || uploadError.message || 'Failed to upload files');
                 }
 
                 const uploadResult = await uploadResponse.json();
                 console.log('Files uploaded successfully:', uploadResult.files);
                 setProcessingStatus("✅ Files uploaded successfully");
+                
+                // Small delay to ensure file data is properly stored in memory
+                await new Promise(resolve => setTimeout(resolve, 1000));
             } else {
                 console.log('No files selected for upload');
             }
@@ -119,28 +122,21 @@ export default function Home() {
                     if (!processResponse.ok) {
                         const processError = await processResponse.json();
                         console.error('Menu processing error:', processError);
-                        setProcessingStatus("⚠️ Menu processing failed, but restaurant was created successfully");
+                        const errorMessage = processError.message || processError.error || 'Menu processing failed';
+                        setProcessingStatus(`⚠️ ${errorMessage}, but restaurant was created successfully`);
                         console.log('Menu processing failed, but restaurant was created successfully');
                     } else {
                         const processResult = await processResponse.json();
                         console.log('Menu items processed successfully:', processResult);
                         
-                        if (processResult.summary) {
-                            const processingTime = processResult.summary.processingTime;
-                            const timeDisplay = processingTime ? `${processingTime.toFixed(2)} seconds` : 'successfully';
-                            setProcessingStatus(`🎉 Menu processing completed! ${processResult.summary.itemsInserted} items inserted ${timeDisplay}`);
+                        if (processResult.itemsInserted !== undefined) {
+                            setProcessingStatus(`🎉 Menu processing completed! ${processResult.itemsInserted} items inserted successfully`);
                         } else {
                             setProcessingStatus("✅ Menu items processed successfully");
                         }
                         
-                        // Show detailed results if available
-                        if (processResult.results) {
-                            let detailedMessage = "📊 Processing Results:\n";
-                            processResult.results.forEach((result, index) => {
-                                detailedMessage += `📄 ${result.file}: ${result.itemsInserted} items inserted, ${result.errors} errors\n`;
-                            });
-                            console.log(detailedMessage);
-                        }
+                        // Log the processing results
+                        console.log(`📊 Processing Results: ${processResult.itemsInserted} items inserted, ${processResult.errors} errors`);
                     }
                 } catch (timeoutError) {
                     console.error('Menu processing timeout or error:', timeoutError);
@@ -159,8 +155,8 @@ export default function Home() {
                             const checkResult = await checkResponse.json();
                             console.log('Menu processing actually succeeded:', checkResult);
                             
-                            if (checkResult.summary) {
-                                setProcessingStatus(`🎉 Menu processing completed! ${checkResult.summary.itemsInserted} items inserted successfully`);
+                            if (checkResult.itemsInserted !== undefined) {
+                                setProcessingStatus(`🎉 Menu processing completed! ${checkResult.itemsInserted} items inserted successfully`);
                             } else {
                                 setProcessingStatus("✅ Menu items processed successfully");
                             }
@@ -230,6 +226,13 @@ export default function Home() {
                     <h2 className="text-lg font-semibold text-center mb-4 text-gray-700">
                         Combine all PDFs into one file before uploading
                     </h2>
+
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800">
+                            <strong>Note:</strong> On Vercel, files are processed in memory and may expire after 5 minutes. 
+                            If you encounter upload issues, try uploading again.
+                        </p>
+                    </div>
 
                     {successMessage && (
                         <div className="mb-4 text-green-600">{successMessage}</div>

@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
-import { readFile, readdir } from 'fs/promises';
-import { join } from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
-
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads', 'menus');
+import { getUploadedFileData, clearUploadedFileData } from '../upload-menu/route.js';
 
 // Initialize Google Gemini
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
@@ -36,38 +33,38 @@ export async function POST(request) {
         
         console.log('✅ Google Gemini API key is configured');
         
-        // Read PDF files from directory
-        const files = await readdir(UPLOAD_DIR);
-        const pdfFiles = files.filter(file => file.endsWith('.pdf'));
+        // Get uploaded file data from memory
+        const fileData = getUploadedFileData();
         
-        console.log('📄 PDF files found:', pdfFiles);
-        
-        if (pdfFiles.length === 0) {
+        if (!fileData) {
             return NextResponse.json({ 
-                error: 'No PDF files found',
-                message: 'Please upload PDF files first'
+                error: 'No PDF file data found',
+                message: 'Please upload PDF files first. If you just uploaded, try again as the file data may have been cleared.'
+            }, { status: 400 });
+        }
+        
+        console.log('📄 PDF file found:', fileData.name);
+        console.log('📅 File timestamp:', new Date(fileData.timestamp).toISOString());
+        
+        // Check if file data is too old (more than 5 minutes)
+        const now = Date.now();
+        const fileAge = now - fileData.timestamp;
+        if (fileAge > 5 * 60 * 1000) { // 5 minutes
+            clearUploadedFileData();
+            return NextResponse.json({ 
+                error: 'File data has expired',
+                message: 'Please upload your PDF files again. File data expires after 5 minutes.'
             }, { status: 400 });
         }
         
         // Initialize Gemini model
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         
-        // Process each PDF with Gemini
-        let allResults = [];
+        console.log(`📖 Processing PDF: ${fileData.name}`);
+        console.log(`📊 File size: ${(fileData.size / 1024 / 1024).toFixed(2)} MB`);
         
-        for (let i = 0; i < pdfFiles.length; i++) {
-            const pdfFile = pdfFiles[i];
-            const filePath = join(UPLOAD_DIR, pdfFile);
-            
-            console.log(`📖 Processing PDF ${i + 1}/${pdfFiles.length}: ${pdfFile}`);
-            
-            try {
-                // Read the PDF file
-                const fileBuffer = await readFile(filePath);
-                console.log(`📊 File size: ${(fileBuffer.length / 1024 / 1024).toFixed(2)} MB`);
-                
-                // Create the prompt
-                const prompt = `Extract all menu items from this nutrition guide PDF and return them as a JSON array. Each menu item should include the item name and all its nutrition facts, ingredients, allergens, and prices in a single info field. 
+        // Create the prompt
+        const prompt = `Extract all menu items from this nutrition guide PDF and return them as a JSON array. Each menu item should include the item name and all its nutrition facts, ingredients, allergens, and prices in a single info field. 
 
 Return ONLY a JSON array like this:
 [
@@ -78,165 +75,135 @@ Return ONLY a JSON array like this:
 ]
 
 Include all menu items from the PDF. Infer ingredients and allergen info if not listed. Include prices if available. Just return the JSON array, no other text.`;
-                
-                console.log('🤖 Sending PDF to Gemini...');
-                
-                // Send PDF to Gemini with retry logic
-                let result;
-                let retryCount = 0;
-                const maxRetries = 3;
-                
-                while (retryCount < maxRetries) {
-                    try {
-                        console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries} - Generating JSON from PDF...`);
-                        result = await model.generateContent([
-                            prompt,
-                            {
-                                inlineData: {
-                                    mimeType: "application/pdf",
-                                    data: fileBuffer.toString('base64')
-                                }
-                            }
-                        ]);
-                        console.log('✅ Gemini JSON generation successful');
-                        break; // Success, exit retry loop
-                    } catch (error) {
-                        retryCount++;
-                        console.log(`❌ Attempt ${retryCount} failed:`, error.message);
-                        
-                        if (error.message.includes('429') && retryCount < maxRetries) {
-                            const waitTime = Math.pow(2, retryCount) * 10; // Exponential backoff: 20s, 40s, 80s
-                            console.log(`⏳ Quota limit hit. Waiting ${waitTime} seconds before retry...`);
-                            await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
-                        } else {
-                            throw error; // Re-throw if max retries reached or different error
+        
+        console.log('🤖 Sending PDF to Gemini...');
+        
+        // Send PDF to Gemini with retry logic
+        let result;
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+            try {
+                console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries} - Generating JSON from PDF...`);
+                result = await model.generateContent([
+                    prompt,
+                    {
+                        inlineData: {
+                            mimeType: "application/pdf",
+                            data: fileData.buffer.toString('base64')
                         }
                     }
+                ]);
+                console.log('✅ Gemini JSON generation successful');
+                break; // Success, exit retry loop
+            } catch (error) {
+                retryCount++;
+                console.log(`❌ Attempt ${retryCount} failed:`, error.message);
+                
+                if (error.message.includes('429') && retryCount < maxRetries) {
+                    const waitTime = Math.pow(2, retryCount) * 10; // Exponential backoff: 20s, 40s, 80s
+                    console.log(`⏳ Quota limit hit. Waiting ${waitTime} seconds before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+                } else {
+                    throw error; // Re-throw if max retries reached or different error
                 }
-                
-                const jsonResult = result.response.text().trim();
-                console.log('✅ Gemini response received for', pdfFile);
-                console.log('📝 JSON result preview:', jsonResult.substring(0, 200));
-                
-                // Clean the response to remove markdown code blocks
-                let cleanJson = jsonResult;
-                if (cleanJson.startsWith('```json')) {
-                    cleanJson = cleanJson.replace(/^```json\s*/, '');
-                }
-                if (cleanJson.startsWith('```')) {
-                    cleanJson = cleanJson.replace(/^```\s*/, '');
-                }
-                if (cleanJson.endsWith('```')) {
-                    cleanJson = cleanJson.replace(/\s*```$/, '');
-                }
-                
-                console.log('🧹 Cleaned JSON preview:', cleanJson.substring(0, 200));
-                
-                // Parse the JSON result to extract menu items
-                console.log('🔍 Parsing JSON response...');
-                let menuItems;
-                try {
-                    menuItems = JSON.parse(cleanJson);
-                    console.log('✅ JSON parsing successful');
-                } catch (parseError) {
-                    console.error('❌ JSON parsing failed:', parseError.message);
-                    console.log('📝 Raw response:', jsonResult);
-                    console.log('📝 Cleaned response:', cleanJson);
-                    throw new Error(`Failed to parse JSON from Gemini response: ${parseError.message}`);
-                }
-                
-                console.log(`📊 Found ${menuItems.length} menu items in ${pdfFile}`);
-                
-                let insertedCount = 0;
-                let errorCount = 0;
-                
-                // Process each menu item
-                console.log('💾 Starting Supabase insertion process...');
-                for (let i = 0; i < menuItems.length; i++) {
-                    const item = menuItems[i];
-                    if (item) {
-                        try {
-                            console.log(`🍽️ Processing item ${i + 1}/${menuItems.length}: "${item.item}"`);
-                            console.log(`📋 Info preview: "${item.info.substring(0, 100)}..."`);
-                            
-                            console.log('🔄 Inserting into Supabase...');
-                            
-                            // Insert using Supabase
-                            const { error } = await supabase
-                                .from('menu_items')
-                                .insert([
-                                    {
-                                        item: item.item,
-                                        info: item.info,
-                                        restaurant_id: restaurant_id
-                                    }
-                                ]);
-                            
-                            if (error) {
-                                console.error(`❌ Supabase insertion error:`, error);
-                                errorCount++;
-                            } else {
-                                insertedCount++;
-                                console.log(`✅ Successfully inserted into Supabase: "${item.item}"`);
-                            }
-                        } catch (insertError) {
-                            console.error(`❌ Error inserting menu item:`, insertError.message);
-                            errorCount++;
-                        }
-                    }
-                }
-                
-                console.log(`📊 PDF ${pdfFile} processing complete:`);
-                console.log(`   ✅ Items inserted: ${insertedCount}`);
-                console.log(`   ❌ Errors: ${errorCount}`);
-                
-                allResults.push({
-                    file: pdfFile,
-                    jsonResult: jsonResult,
-                    itemsInserted: insertedCount,
-                    errors: errorCount
-                });
-                
-            } catch (pdfError) {
-                console.error(`❌ Error processing PDF ${pdfFile}:`, pdfError.message);
-                allResults.push({
-                    file: pdfFile,
-                    error: pdfError.message
-                });
             }
         }
         
-        console.log('🎉 All PDFs processed with Gemini');
+        const jsonResult = result.response.text().trim();
+        console.log('✅ Gemini response received');
+        console.log('📝 JSON result preview:', jsonResult.substring(0, 200));
         
-        // Calculate totals
-        const totalInserted = allResults.reduce((sum, result) => sum + (result.itemsInserted || 0), 0);
-        const totalErrors = allResults.reduce((sum, result) => sum + (result.errors || 0), 0);
+        // Clean the response to remove markdown code blocks
+        let cleanJson = jsonResult;
+        if (cleanJson.startsWith('```json')) {
+            cleanJson = cleanJson.replace(/^```json\s*/, '');
+        }
+        if (cleanJson.startsWith('```')) {
+            cleanJson = cleanJson.replace(/^```\s*/, '');
+        }
+        if (cleanJson.endsWith('```')) {
+            cleanJson = cleanJson.replace(/\s*```$/, '');
+        }
         
-        console.log(`📊 FINAL SUMMARY:`);
-        console.log(`   📄 PDFs processed: ${pdfFiles.length}`);
-        console.log(`   ✅ Menu items inserted: ${totalInserted}`);
-        console.log(`   ❌ Errors encountered: ${totalErrors}`);
-        console.log(`   🏪 Restaurant ID: ${restaurant_id}`);
+        console.log('🧹 Cleaned JSON preview:', cleanJson.substring(0, 200));
         
-        return NextResponse.json({ 
-            success: true, 
-            message: `PDFs processed and menu items inserted successfully! ${totalInserted} items inserted.`,
-            restaurant_id: restaurant_id,
-            summary: {
-                pdfsProcessed: pdfFiles.length,
-                itemsInserted: totalInserted,
-                errors: totalErrors
-            },
-            results: allResults,
-            timestamp: new Date().toISOString()
+        // Parse the JSON result to extract menu items
+        console.log('🔍 Parsing JSON response...');
+        let menuItems;
+        try {
+            menuItems = JSON.parse(cleanJson);
+            console.log('✅ JSON parsing successful');
+        } catch (parseError) {
+            console.error('❌ JSON parsing failed:', parseError.message);
+            console.log('📝 Raw response:', jsonResult);
+            console.log('📝 Cleaned response:', cleanJson);
+            throw new Error(`Failed to parse JSON from Gemini response: ${parseError.message}`);
+        }
+        
+        console.log(`📊 Found ${menuItems.length} menu items`);
+        
+        let insertedCount = 0;
+        let errorCount = 0;
+        
+        // Process each menu item
+        console.log('💾 Starting Supabase insertion process...');
+        for (let i = 0; i < menuItems.length; i++) {
+            const item = menuItems[i];
+            if (item) {
+                try {
+                    console.log(`🍽️ Processing item ${i + 1}/${menuItems.length}: "${item.item}"`);
+                    console.log(`📋 Info preview: "${item.info.substring(0, 100)}..."`);
+                    
+                    console.log('🔄 Inserting into Supabase...');
+                    
+                    // Insert using Supabase
+                    const { error } = await supabase
+                        .from('menu_items')
+                        .insert([
+                            {
+                                item: item.item,
+                                info: item.info,
+                                restaurant_id: restaurant_id
+                            }
+                        ]);
+                    
+                    if (error) {
+                        console.error(`❌ Supabase insertion error:`, error);
+                        errorCount++;
+                    } else {
+                        insertedCount++;
+                        console.log(`✅ Successfully inserted into Supabase: "${item.item}"`);
+                    }
+                } catch (insertError) {
+                    console.error(`❌ Error inserting menu item:`, insertError.message);
+                    errorCount++;
+                }
+            }
+        }
+        
+        console.log(`📊 PDF processing complete:`);
+        console.log(`   ✅ Items inserted: ${insertedCount}`);
+        console.log(`   ❌ Errors: ${errorCount}`);
+        
+        // Clear the uploaded file data from memory
+        clearUploadedFileData();
+        
+        return NextResponse.json({
+            success: true,
+            message: `Successfully processed PDF and inserted ${insertedCount} menu items`,
+            itemsInserted: insertedCount,
+            errors: errorCount,
+            totalItems: menuItems.length
         });
 
     } catch (error) {
-        console.error('💥 === API ROUTE ERROR ===');
-        console.error('❌ Error details:', error.message);
-        
+        console.error('❌ Processing error:', error);
+        // Clear file data on error as well
+        clearUploadedFileData();
         return NextResponse.json({ 
-            error: 'API route failed',
+            error: 'Failed to process PDF',
             details: error.message
         }, { status: 500 });
     }
