@@ -59,16 +59,21 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative">
+      <section className="relative bg-cover bg-center" style={{ backgroundImage: 'url(/image.png)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 pb-32">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-blue-900 mb-6 min-h-[1.2em]">
-              {displayText}
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 min-h-[1.2em]">
+              {displayText.length > 0 && (
+                <span className={displayText.startsWith('P') ? 'text-white' : 'text-white'}>
+                  {displayText.charAt(0)}
+                </span>
+              )}
+              <span className="text-white">{displayText.substring(1)}</span>
               {!isTypingComplete && (
-                <span className="animate-pulse text-blue-600">|</span>
+                <span className="animate-pulse text-white">|</span>
               )}
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-white mb-8 max-w-3xl mx-auto">
               Free your team from repetitive order-taking so they can focus on food quality, customer experience, and growing your business. AI handles the routine questions while your staff creates memorable moments!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -81,7 +86,7 @@ export default function Home() {
               <div className="relative">
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 flex items-center gap-2"
+                  className="border-2 border-gray-300 hover:border-gray-400 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 flex items-center gap-2"
                 >
                   See How It Works
                   <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,10 +95,10 @@ export default function Home() {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute top-full mt-2 left-0 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                     <Link 
                       href="/restaurant/1"
-                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
+                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 first:rounded-t-lg"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <div className="font-medium">El Pollo Loco</div>
@@ -101,7 +106,7 @@ export default function Home() {
                     </Link>
                     <Link 
                       href="/restaurant/2"
-                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 last:rounded-b-lg"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <div className="font-medium">In-N-Out</div>
@@ -131,7 +136,7 @@ export default function Home() {
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
               <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Instant Answers</h3>
@@ -299,75 +304,61 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-6 bg-white rounded-lg shadow-sm">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
+                <span className="text-white text-2xl font-bold">1</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Enhance Employee Efficiency</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Upload Your Menu</h3>
               <p className="text-gray-600">
-                AI handles routine questions and orders, freeing your staff to focus on food quality, customer connections, and business growth.
+                Upload your nutrition guide PDF. Our AI instantly learns your entire menu, including ingredients, allergens, and nutrition facts.
               </p>
             </div>
 
+            {/* Step 2 */}
             <div className="text-center p-6 bg-white rounded-lg shadow-sm">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span className="text-white text-2xl font-bold">2</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Increase Order Accuracy</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">AI Learns Everything</h3>
               <p className="text-gray-600">
-                No more misheard orders or forgotten modifications. AI ensures every detail is captured correctly.
+                AI analyzes your menu and can answer any question about ingredients, allergens, nutrition, pricing, and make personalized recommendations.
               </p>
             </div>
 
+            {/* Step 3 */}
             <div className="text-center p-6 bg-white rounded-lg shadow-sm">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span className="text-white text-2xl font-bold">3</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Improve Customer Satisfaction</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Customers Order Instantly</h3>
               <p className="text-gray-600">
-                Instant answers, personalized recommendations, and no wait times lead to happier customers and repeat business.
+                Customers can ask questions, get recommendations, and place orders without waiting for staff. Perfect for drive-thru, phone, or online ordering.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Transform Your Customer Service?
+      {/* Call to Action Section */}
+      <section className="py-20 bg-blue-700 text-white text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold mb-4">
+            Ready to Transform Your Restaurant?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join restaurants that are already using AI to provide better service, reduce costs, and increase customer satisfaction.
+          <p className="text-xl mb-8">
+            Join the growing number of restaurants using AI to enhance customer service and streamline operations.
           </p>
           <Link 
             href="/add-store"
-            className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg inline-block"
+            className="bg-white text-blue-700 px-10 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg inline-block"
           >
-            Start Your AI Customer Service
+            Get Started Today
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold mb-4">Restaurant AI</h3>
-            <p className="text-gray-400 mb-6">
-              AI-powered customer service and ordering for modern restaurants
-            </p>
-            <div className="flex justify-center space-x-6">
-              <span className="text-gray-400">Powered by Google Gemini AI</span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-400">Built with Next.js & Supabase</span>
-            </div>
-          </div>
+      <footer className="bg-gray-800 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p>&copy; 2025 Presto AI.</p>
         </div>
       </footer>
     </div>
