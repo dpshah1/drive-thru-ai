@@ -196,113 +196,129 @@ export default function Home() {
     };
 
     return (
-        <main
-            className="min-h-screen flex items-center justify-center"
-            style={{ 
-                backgroundImage: 'url("/image (3).png")', 
-                backgroundSize: 'cover', 
-                backgroundPosition: 'center' 
-            }}
-        >
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-md p-6 bg-white shadow-md rounded-md"
-            >
-                <h1 className="text-2xl font-bold text-center mb-6">
-                    Create a New Restaurant
-                </h1>
-
-                <h2 className="text-lg font-semibold text-center mb-4 text-gray-700">
-                    Combine all PDFs into one file before uploading
-                </h2>
-
-                {successMessage && (
-                    <div className="mb-4 text-green-600">{successMessage}</div>
-                )}
-                {errorMessage && (
-                    <div className="mb-4 text-red-600">{errorMessage}</div>
-                )}
-                {processingStatus && (
-                    <div className="mb-4 text-blue-600 text-sm bg-blue-50 p-3 rounded-md">
-                        {processingStatus}
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+            {/* Navigation */}
+            <nav className="bg-blue-900 text-white border-b border-blue-800 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <img src="/logo.png" alt="Logo" className="h-12 w-auto" />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <a 
+                                href="/restaurant" 
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                            >
+                                View Restaurants
+                            </a>
+                        </div>
                     </div>
-                )}
-
-                <div className="mb-4">
-                    <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Restaurant Name:
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
                 </div>
+            </nav>
 
-                <div className="mb-4">
-                    <label
-                        htmlFor="location"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Location:
-                    </label>
-                    <input
-                        type="text"
-                        id="location"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                </div>
-
-                <div className="mb-4">
-    <label 
-        htmlFor="menu" 
-        className="block text-sm font-medium text-gray-700 mb-1"
-    >
-        Upload Menu (PDFs only):
-    </label>
-    <div className="relative">
-        <input
-            type="file"
-            id="menu"
-            name="menu"
-            accept="application/pdf"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-        />
-        <label
-            htmlFor="menu"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer inline-block text-gray-700 hover:bg-gray-50"
-        >
-            Choose Files
-        </label>
-    </div>
-    {selectedFiles.length > 0 && (
-        <div className="mt-2 text-sm text-gray-600">
-            Selected files: {selectedFiles.map(file => file.name).join(', ')}
-        </div>
-    )}
-</div>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            <main className="flex items-center justify-center py-24">
+                <form
+                    onSubmit={handleSubmit}
+                    className="w-full max-w-md p-6 bg-white shadow-md rounded-md"
                 >
-                    {loading ? "Processing..." : "Submit"}
-                </button>
-            </form>
-        </main>
+                    <h1 className="text-2xl font-bold text-center mb-6">
+                        Create a New Restaurant
+                    </h1>
+
+                    <h2 className="text-lg font-semibold text-center mb-4 text-gray-700">
+                        Combine all PDFs into one file before uploading
+                    </h2>
+
+                    {successMessage && (
+                        <div className="mb-4 text-green-600">{successMessage}</div>
+                    )}
+                    {errorMessage && (
+                        <div className="mb-4 text-red-600">{errorMessage}</div>
+                    )}
+                    {processingStatus && (
+                        <div className="mb-4 text-blue-600 text-sm bg-blue-50 p-3 rounded-md">
+                            {processingStatus}
+                        </div>
+                    )}
+
+                    <div className="mb-4">
+                        <label
+                            htmlFor="name"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                            Restaurant Name:
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label
+                            htmlFor="location"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                            Location:
+                        </label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            value={formData.location}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label 
+                            htmlFor="menu" 
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                            Upload Menu (PDFs only):
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                id="menu"
+                                name="menu"
+                                accept="application/pdf"
+                                multiple
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                            <label
+                                htmlFor="menu"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer inline-block text-gray-700 hover:bg-gray-50"
+                            >
+                                Choose Files
+                            </label>
+                        </div>
+                        {selectedFiles.length > 0 && (
+                            <div className="mt-2 text-sm text-gray-600">
+                                Selected files: {selectedFiles.map(file => file.name).join(', ')}
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                    >
+                        {loading ? "Processing..." : "Submit"}
+                    </button>
+                </form>
+            </main>
+        </div>
     );
 }
