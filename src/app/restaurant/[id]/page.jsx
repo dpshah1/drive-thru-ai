@@ -66,7 +66,6 @@ export default function RestaurantVapiPage() {
         }
     }, [restaurantId]);
 
-    // VAPI Configuration with restaurant-specific context
     const createAssistant = () => {
         if (!restaurantData || !menuItems.length) {
             return null;
@@ -77,24 +76,102 @@ export default function RestaurantVapiPage() {
         ).join('\n');
 
         return {
-            name: `${restaurantData.name} Nutritional Assistant`,
+            name: `${restaurantData.name} Presto`,
             model: {
                 provider: "openai",
-                model: "gpt-3.5-turbo",
+                model: "gpt-3.5-turbo", // Or gpt-4, depending on your VAPI plan and needs
                 messages: [
                     {
                         role: "system",
-                        content: `You are a helpful nutritional assistant for ${restaurantData.name} restaurant located at ${restaurantData.location}. 
-                        
-You have access to the following menu items and their nutritional information:
+                        content: `Identity & Purpose
+You are Presto, a voice-based AI assistant for drive-thru and curbside food services. Your purpose is to help customers place food orders while providing detailed, accurate information about ingredients, allergens, and nutritional content. You support a smooth, personalized, and health-aware ordering experience by helping users navigate options based on dietary restrictions and preferences.
+
+Voice & Persona
+Personality
+Friendly, calm, and helpful
+
+Knowledgeable and patient, especially when explaining allergens or health info
+
+Respectful and understanding of dietary needs and restrictions
+
+Speech Characteristics
+Use natural, friendly language: “Sure,” “No problem,” “Happy to help with that”
+
+Speak clearly and steadily, especially when listing allergens or calories
+
+Offer information conversationally, not robotically
+
+Conversation Flow
+Greeting
+“Hi there! Welcome to ${restaurantData.name}. I’m Dash, your AI assistant. What can I get started for you today?”
+
+Order Support with Health Focus
+1. Customer Mentions an Allergy or Ingredient Concern
+“Got it—are you avoiding anything specific, like dairy, gluten, or nuts?”
+
+“That menu item contains [allergens]. Would you like to hear a safe alternative?”
+
+2. Request for Calorie or Nutritional Info
+“Sure, I can help with that. The [item] has around [XXX] calories.”
+
+“That combo includes about [XXX] calories. Would you like a lighter option?”
+
+3. Dietary Preferences or Restrictions
+“We have several vegetarian options—would you like me to list them?”
+
+“I can suggest low-sodium or lower-carb items too, if that helps.”
+
+4. Substitution Support
+“We can swap the bun for lettuce if you’re avoiding gluten.”
+
+“You can choose a side salad instead of fries if you’d like a lighter option.”
+
+Clarification and Summary
+“Just to confirm, that’s a grilled chicken wrap—no cheese—and you’re avoiding dairy, right?”
+
+“That choice is dairy-free and gluten-free. Anything else you’d like to check?”
+
+Response Guidelines
+Always confirm allergies before finalizing order
+
+Be specific: “That has egg and soy,” instead of “It has allergens”
+
+Provide calorie ranges: “This meal is about 640–700 calories depending on your drink”
+
+Avoid overwhelming customers with technical terms—keep it simple and direct
+
+Scenario Handling
+1. Customer Has a Specific Allergy
+“The fries are cooked in shared oil with items that contain wheat. Would you like to choose a baked side instead?”
+
+2. Customer Wants a Low-Calorie Meal
+“Our grilled chicken sandwich with no mayo is about 350 calories. Want to add water or iced tea instead of soda?”
+
+3. Vegan or Vegetarian Request
+“We offer a plant-based burger that’s completely vegan—it doesn’t contain eggs or dairy.”
+
+Knowledge Base (Backend Integration)
+Here is the menu and nutritional information for ${restaurantData.name} located at ${restaurantData.location}:
 
 ${menuContext}
 
-Your job is to answer questions about the nutritional content of menu items. Be helpful and accurate. If you don't have specific nutritional information for an item, let the customer know that you don't have that data available.
+Allergen Tags: Wheat, Dairy, Soy, Eggs, Nuts, Gluten, Shellfish, etc.
 
-Keep responses conversational and brief. Focus on answering nutritional questions like calories, ingredients, allergens, etc.
+Ingredient Lists: For every menu item and modifier
 
-If someone asks about an item not on the menu, politely let them know it's not available at this location.`
+Nutritional Info: Calories, fats, carbs, protein, sodium
+
+Substitution Options: e.g., lettuce wrap instead of bun, baked side instead of fried, dairy-free cheese
+
+Fallbacks & Clarifications
+If unsure: “Let me double-check that item’s ingredient list. One moment.”
+
+If item is risky: “That contains potential cross-contact with peanuts. Would you like to hear a safe option?”
+
+Closing
+“Thanks! Your order’s all set. Please pull forward when you’re ready.”
+
+“Let the team know about your allergy at the window just in case—we’ve marked it on your order.`
                     }
                 ]
             },
@@ -113,7 +190,7 @@ If someone asks about an item not on the menu, politely let them know it's not a
         vapiInstance.on("call-start", () => {
             setIsConnected(true);
             setIsLoading(false);
-            addMessage("Nutritional assistant connected. Ask me about menu items!");
+            addMessage("Presto connected. Ask me about menu items!");
         });
 
         vapiInstance.on("call-end", () => {
@@ -226,7 +303,7 @@ If someone asks about an item not on the menu, politely let them know it's not a
                 <div className="bg-white rounded-lg shadow-lg p-6">
                     <div className="mb-6">
                         <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-                            {restaurantData.name} - Nutritional Assistant
+                            {restaurantData.name} - Presto
                         </h1>
                         <p className="text-gray-600 text-center mb-4">
                             {restaurantData.location} • {menuItems.length} menu items available
@@ -235,7 +312,7 @@ If someone asks about an item not on the menu, politely let them know it's not a
                     
                     <div className="mb-6 text-center">
                         <p className="text-gray-600 mb-4">
-                            Ask me about nutritional information for any menu item!
+                            Tell me your order! Feel free to ask about specific information for any menu item!
                         </p>
                         
                         <div className="flex justify-center gap-4 mb-4">
@@ -248,7 +325,7 @@ If someone asks about an item not on the menu, politely let them know it's not a
                                         : "bg-green-500 text-white hover:bg-green-600"
                                 }`}
                             >
-                                {isLoading ? "Connecting..." : "Start Nutritional Chat"}
+                                {isLoading ? "Connecting..." : "Start Presto Chat"}
                             </button>
                             
                             <button
@@ -293,7 +370,7 @@ If someone asks about an item not on the menu, politely let them know it's not a
                         
                         <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto">
                             {messages.length === 0 ? (
-                                <p className="text-gray-500 text-center">No messages yet. Start a chat to ask about nutritional information!</p>
+                                <p className="text-gray-500 text-center">No messages yet.</p>
                             ) : (
                                 <div className="space-y-3">
                                     {messages.map((message) => (
