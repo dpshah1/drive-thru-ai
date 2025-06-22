@@ -1,10 +1,47 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  
+  const fullText = "Meet Presto.";
+
+  useEffect(() => {
+    let index = 0;
+    let isDeleting = false;
+    
+    const typewriterEffect = () => {
+      if (!isDeleting && index < fullText.length) {
+        // Typing forward
+        setDisplayText(fullText.slice(0, index + 1));
+        index++;
+        setTimeout(typewriterEffect, 150);
+      } else if (!isDeleting && index === fullText.length) {
+        // Pause at end
+        setIsTypingComplete(true);
+        setTimeout(() => {
+          isDeleting = true;
+          setIsTypingComplete(false);
+          typewriterEffect();
+        }, 2000); // Pause for 2 seconds
+      } else if (isDeleting && index > 0) {
+        // Deleting backward
+        setDisplayText(fullText.slice(0, index - 1));
+        index--;
+        setTimeout(typewriterEffect, 100);
+      } else if (isDeleting && index === 0) {
+        // Start over
+        isDeleting = false;
+        setTimeout(typewriterEffect, 500); // Brief pause before restarting
+      }
+    };
+
+    typewriterEffect();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -25,8 +62,11 @@ export default function Home() {
       <section className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 pb-32">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-blue-900 mb-6">
-              Meet Presto
+            <h1 className="text-5xl md:text-6xl font-bold text-blue-900 mb-6 min-h-[1.2em]">
+              {displayText}
+              {!isTypingComplete && (
+                <span className="animate-pulse text-blue-600">|</span>
+              )}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Free your team from repetitive order-taking so they can focus on food quality, customer experience, and growing your business. AI handles the routine questions while your staff creates memorable moments..
