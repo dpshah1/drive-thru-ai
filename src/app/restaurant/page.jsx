@@ -191,6 +191,27 @@ export default function RestaurantPage() {
                   Select a restaurant above to interact with their AI customer service agent
                 </p>
               </div>
+
+              {/* Quick Links */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Quick Demo Access</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <a 
+                    href="/restaurant/1"
+                    className="block p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200"
+                  >
+                    <div className="font-medium text-blue-900">El Pollo Loco</div>
+                    <div className="text-sm text-blue-700">Try AI ordering for chicken favorites</div>
+                  </a>
+                  <a 
+                    href="/restaurant/2"
+                    className="block p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:from-green-100 hover:to-green-200 transition-all duration-200"
+                  >
+                    <div className="font-medium text-green-900">In-N-Out</div>
+                    <div className="text-sm text-green-700">Experience AI alongside classic burgers</div>
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </div>
